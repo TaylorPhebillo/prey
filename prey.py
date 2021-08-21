@@ -112,7 +112,7 @@ def dot_2d(measured_vector, response):
 
 
 def col_sum(*input_components):
-    print(input_components)
+    #print(input_components)
     result = [0] * len(input_components[0])
     for component in input_components:
         assert len(component) == len(result)
@@ -123,7 +123,7 @@ def col_sum(*input_components):
 class Behavior:
     num_responses = 2
 
-    def __init__(self, response=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]):
+    def __init__(self, response=[random.gauss(0,1) for _ in range(10)]):
         self.programmed_response = response
         # Each component of a 2d response needs to respond to both the x and y
         # component of what it's responding to, so responding to one thing
@@ -210,8 +210,10 @@ def simulate_cat_mouse(
         num_mice,
         cat_behavior,
         plotter=None,
-        plotter_complete=None):
-
+        plotter_complete=None,
+        seed = 0):
+    if seed:
+        random.seed(seed)
     cats = [Position() for _ in range(num_cats)]
     mice = [Position() for _ in range(num_mice)]
     killed = []
@@ -227,8 +229,9 @@ def print_locations(cats, mice, killed):
 
 
 class CatMouseVisualizer:
-    def __init__(self, size=256, target="/Users/taylor/prey/test.gif"):
-        self.target = target
+    def __init__(self, size=256, target="/Users/taylor/prey/test", suffix = "", filetype=".gif", limit=None):
+        self.limit = limit
+        self.target = target + suffix + filetype
         self.img_size = size
         self.imgs = []
 
@@ -260,6 +263,8 @@ class CatMouseVisualizer:
             draw_at(mouse.position[0], "white")
         for cat in cats:
             draw_at(cat.position[0], "red")
+        if self.limit and self.limit == len(self.imgs):
+           self.complete()
 
     def complete(self):
         print(f"Saving {len(self.imgs)} images into a gif")
@@ -271,10 +276,26 @@ class CatMouseVisualizer:
 
 
 def main():
-    vis = CatMouseVisualizer()
-    iters = simulate_cat_mouse(3, 50, 
-        circle_behavior, vis.visualize_locations, vis.complete)
-    print(f"Lived for {iters}")
+        vis = CatMouseVisualizer(suffix="manual", limit=1000)
+        iters = simulate_cat_mouse(3, 50, 
+            Behavior(
+                
+[1.2932335026451751, -0.6136395570170698, 0.2855665089845411, -1.437305314105581, -0.5155442512710706, 0.6109865232330572, -1.2412022889309902, 0.17199899428165452, 1.8130341188020964, -0.4954604336391439]
+#[2.2572500811912444, 0.4661386594874034, -0.676659837827762, 0.5538984220307054, 0.48868587654619794, -2.18437509271094, 0.6168295542783745, 1.0701807827646057, 0.060804319389016495, 0.14728058654309506]
+#[1.8825092480623016, 0.17668813760273883, 2.1739185972885022, -0.597018704188203, 1.1028614781206398, -0.29957394259885484, -1.5715009707819085, 0.37687426542195746, -0.9061819610259495, -0.23747686235177415]
+#[0.11334867808235763, -0.15690276985924037, 0.9096733770095569, 0.5210112561116431, -0.3120968747671703, 0.8460759468084588, -1.9039811179568897, -1.194972415436677, 0.5377357786463025, -0.711266563750424]
+                ), vis.visualize_locations, vis.complete, seed =74280061 )
+#    vecs_to_try = [ [[random.gauss(0, 1) for _ in range(10)] , random.randrange(100000000)] for _ in range(1000)]
+#    print("\n".join(str(x) for x in vecs_to_try))
+#    response_times = []
+#    for i in range(len(vecs_to_try)):
+#        print(f"Trying {vecs_to_try[i]}")
+#        vis = CatMouseVisualizer(suffix=str(i))
+#        iters = simulate_cat_mouse(3, 50, 
+#            Behavior(vecs_to_try[i][0]), vis.visualize_locations, vis.complete, seed = vecs_to_try[i][1])
+#        print(f"Lived for {iters}")
+#        response_times.append(iters)
+#    print(response_times)
 
 
 if __name__ == "__main__":

@@ -8,7 +8,7 @@ def is_position_equal(pos, expected):
     try:
         # Not clear if we got coordinates or a position object, so try to
         # extract coordinates
-        return is_position_equal(pos.position, expected)
+        return is_position_equal(pos._position, expected)
     except AttributeError:
         pass
     if not expected:
@@ -30,9 +30,6 @@ class TestSimulation(unittest.TestCase):
         # With no mice, simulation should stop immediately
         s = CatMouseSimulator([], [], Behavior(), None)
         self.assertFalse(s.iterate())
-
-    def build_position_checker(self):
-        pass
 
     def test_cat_acceleration(self):
         """

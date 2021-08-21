@@ -4,7 +4,7 @@ import math
 
 
 def normalize(direction, length):
-    if all([x == 0 for x in direction]):
+    if all(x == 0 for x in direction):
         return direction
     current_len = math.sqrt(sum([x**2 for x in direction]))
     return [x * length / current_len for x in direction]
@@ -50,11 +50,10 @@ class Position:
                     self.drag) else self.drag[derivative_level]
         self.bounce()
 
-    """
-    If position exceeds the boundaries of the 'map', reflect the position & velocity back into the map
-    Note that in principle, one time step could bounce from one wall to another many times, hence the
-    while loop
-    """
+    
+    # If position exceeds the boundaries of the 'map', reflect the position & velocity back into the map
+    # Note that in principle, one time step could bounce from one wall to another many times, hence the
+    # while loop
 
     def bounce(self):
         while self._single_bounce():
@@ -99,20 +98,58 @@ def argmin(args, func):
     return (min_arg, min_v, min_i)
 
 
-def dist(a, b):
-    return math.sqrt(sum([(a[i] - b[i])**2 for i in range(len(a))]))
+def dist(point_a, point_b):
+    return math.sqrt(sum([(point_a[i] - point_b[i])**2 for i in range(len(point_a))]))
 
+
+def dot_2d(measured_vector, response):
+    assert len(measured_vector) == 2
+    assert len(response) == 4
+    return [measured_vector[0] * response[0] +
+            measured_vector[1] * response[1],
+            measured_vector[0] * response[2] +
+            measured_vector[1] * response[3]]
+
+
+def col_sum(*input_components):
+    print(input_components)
+    result = [0] * len(input_components[0])
+    for component in input_components:
+        assert len(component) == len(result)
+        for dim in range(len(result)):
+            result[dim] += component[dim]
+    return result
 
 class Behavior:
-    required_dims = 4
+    num_responses = 2
 
-    def __init__(self, response=[0] * 4):
-        self.response = response
-        assert(len(response) == Behavior.required_dims)
+    def __init__(self, response=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]):
+        self.programmed_response = response
+        # Each component of a 2d response needs to respond to both the x and y
+        # component of what it's responding to, so responding to one thing
+        # uses 4 numbers (given the naive implementation)
+        # The final 2 response components are the +C component- the default drift
+        assert len(self.programmed_response) == Behavior.num_responses * 4 + 2
 
     def react(self, cats, position):
-        return [-(position[1] - 0.5), (position[0] - 0.5)]
+        # Interpret the first two values of the vector as the default drift behavior
+        return col_sum(
+          self.programmed_response[0:2],
+          dot_2d(cats, self.programmed_response[2:6]),
+          dot_2d(position, self.programmed_response[6:10]))
 
+# A special case of behavior that's programmed to ignore the cats, and move in circles
+# dx = y - 0.5
+# dy = 0.5 - x
+circle_behavior = Behavior([
+-0.5, # dx drift
+0.5, # dy drift
+0, 0, 0, 0, # 4 entries for responding to nearby cats
+0, # dx response to x
+1.0, # dx response to y
+-1.0, # dy response to x
+0  # dy response to y
+])
 
 class CatMouseSimulator:
     def __init__(
@@ -137,12 +174,14 @@ class CatMouseSimulator:
     def iterate(self):
         closest_mice = [argmin(self.mice, lambda mouse: dist(
             mouse.position[0], cat.position[0])) for cat in self.cats]
+        closest_cats = [argmin(self.cats, lambda cat: dist(
+            mouse.position[0], cat.position[0])) for mouse in self.mice]
         direction_to_mice = [
             [closest_mice[i][0].position[0][d] - cat.position[0][d]
              for d in range(len(cat.position[0]))] for i,
             cat in enumerate(self.cats)]
         mice_moves = [
-            self.cat_behavior.react(self.cats, self.mice[i].position[0])
+            self.cat_behavior.react(closest_cats[i][0].position[0], self.mice[i].position[0])
             for i in range(len(self.mice))]
         # Move
         for i, cat in enumerate(self.cats):
@@ -178,7 +217,7 @@ def simulate_cat_mouse(
     killed = []
     iterations = 0
     s = CatMouseSimulator(cats, mice, cat_behavior, plotter, plotter_complete)
-    while(s.iterate()):
+    while s.iterate():
         iterations += 1
     return iterations
 
@@ -233,8 +272,8 @@ class CatMouseVisualizer:
 
 def main():
     vis = CatMouseVisualizer()
-    iters = simulate_cat_mouse(3, 50, Behavior(
-        [0] * 4), vis.visualize_locations, vis.complete)
+    iters = simulate_cat_mouse(3, 50, 
+        circle_behavior, vis.visualize_locations, vis.complete)
     print(f"Lived for {iters}")
 
 

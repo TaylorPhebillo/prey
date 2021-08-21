@@ -2,6 +2,7 @@ import random
 from PIL import Image, ImageDraw
 import math
 
+
 def normalize(direction, length):
     if all(x == 0 for x in direction):
         return direction
@@ -49,7 +50,6 @@ class Position:
                     self.drag) else self.drag[derivative_level]
         self.bounce()
 
-    
     # If position exceeds the boundaries of the 'map', reflect the position & velocity back into the map
     # Note that in principle, one time step could bounce from one wall to another many times, hence the
     # while loop
@@ -98,7 +98,8 @@ def argmin(args, func):
 
 
 def dist(point_a, point_b):
-    return math.sqrt(sum([(point_a[i] - point_b[i])**2 for i in range(len(point_a))]))
+    return math.sqrt(
+        sum([(point_a[i] - point_b[i])**2 for i in range(len(point_a))]))
 
 
 def dot_2d(measured_vector, response):
@@ -111,7 +112,6 @@ def dot_2d(measured_vector, response):
 
 
 def col_sum(*input_components):
-    #print(input_components)
     result = [0] * len(input_components[0])
     for component in input_components:
         assert len(component) == len(result)
@@ -119,36 +119,41 @@ def col_sum(*input_components):
             result[dim] += component[dim]
     return result
 
+
 class Behavior:
     num_responses = 2
 
-    def __init__(self, response=[random.gauss(0,1) for _ in range(10)]):
+    def __init__(self, response=[random.gauss(0, 1) for _ in range(10)]):
         self.programmed_response = response
         # Each component of a 2d response needs to respond to both the x and y
         # component of what it's responding to, so responding to one thing
         # uses 4 numbers (given the naive implementation)
-        # The final 2 response components are the +C component- the default drift
+        # The final 2 response components are the +C component- the default
+        # drift
         assert len(self.programmed_response) == Behavior.num_responses * 4 + 2
 
     def react(self, cats, position):
-        # Interpret the first two values of the vector as the default drift behavior
+        # Interpret the first two values of the vector as the default drift
+        # behavior
         return col_sum(
-          self.programmed_response[0:2],
-          dot_2d(cats, self.programmed_response[2:6]),
-          dot_2d(position, self.programmed_response[6:10]))
+            self.programmed_response[0:2],
+            dot_2d(cats, self.programmed_response[2:6]),
+            dot_2d(position, self.programmed_response[6:10]))
+
 
 # A special case of behavior that's programmed to ignore the cats, and move in circles
 # dx = y - 0.5 (since x and y range from 0. to 1.)
 # dy = 0.5 - x
 circle_behavior = Behavior([
--0.5, # dx drift
-0.5, # dy drift
-0, 0, 0, 0, # 4 entries for responding to nearby cats
-0, # dx response to x
-1.0, # dx response to y
--1.0, # dy response to x
-0  # dy response to y
+    -0.5,  # dx drift
+    0.5,  # dy drift
+    0, 0, 0, 0,  # 4 entries for responding to nearby cats
+    0,  # dx response to x
+    1.0,  # dx response to y
+    -1.0,  # dy response to x
+    0  # dy response to y
 ])
+
 
 class CatMouseSimulator:
     def __init__(
@@ -179,8 +184,9 @@ class CatMouseSimulator:
             [closest_mice[i][0].position[0][d] - cat.position[0][d]
              for d in range(len(cat.position[0]))] for i,
             cat in enumerate(self.cats)]
-        mice_moves = [
-            self.cat_behavior.react(closest_cats[i][0].position[0], self.mice[i].position[0])
+        mice_moves = [self.cat_behavior.react(
+            closest_cats[i][0].position[0],
+            self.mice[i].position[0])
             for i in range(len(self.mice))]
         # Move
         for i, cat in enumerate(self.cats):
@@ -210,7 +216,7 @@ def simulate_cat_mouse(
         cat_behavior,
         plotter=None,
         plotter_complete=None,
-        seed = 0):
+        seed=0):
     if seed:
         random.seed(seed)
     cats = [Position() for _ in range(num_cats)]
@@ -228,7 +234,13 @@ def print_locations(cats, mice, killed):
 
 
 class CatMouseVisualizer:
-    def __init__(self, size=256, target="/Users/taylor/prey/test", suffix = "", filetype=".gif", limit=None):
+    def __init__(
+            self,
+            size=256,
+            target="/Users/taylor/prey/test",
+            suffix="",
+            filetype=".gif",
+            limit=None):
         self.limit = limit
         self.target = target + suffix + filetype
         self.img_size = size
@@ -263,7 +275,7 @@ class CatMouseVisualizer:
         for cat in cats:
             draw_at(cat.position[0], "red")
         if self.limit and self.limit == len(self.imgs):
-           self.complete()
+            self.complete()
 
     def complete(self):
         print(f"Saving {len(self.imgs)} images into a gif")
@@ -273,22 +285,36 @@ class CatMouseVisualizer:
             fp=self.target, format='GIF', append_images=self.imgs,
             save_all=True, duration=20, loop=0)
 
+
 def fun_result():
     vis = CatMouseVisualizer(suffix="manual", limit=1000)
-    iters = simulate_cat_mouse(3, 50, 
+    iters = simulate_cat_mouse(
+        3, 50,
         Behavior(
-            [1.2932335026451751, -0.6136395570170698, 0.2855665089845411, -1.437305314105581, -0.5155442512710706, 0.6109865232330572, -1.2412022889309902, 0.17199899428165452, 1.8130341188020964, -0.4954604336391439]
-        ), vis.visualize_locations, vis.complete, seed =74280061 )
+            [1.2932335026451751, -0.6136395570170698, 0.2855665089845411, -
+             1.437305314105581, -0.5155442512710706, 0.6109865232330572, -
+             1.2412022889309902, 0.17199899428165452, 1.8130341188020964, -
+             0.4954604336391439]),
+        vis.visualize_locations, vis.complete, seed=74280061)
+
 
 def main():
-    vecs_to_try = [ [[random.gauss(0, 1) for _ in range(10)] , random.randrange(100000000)] for _ in range(1000)]
+    vecs_to_try = [
+        [[random.gauss(0, 1) for _ in range(10)],
+         random.randrange(100000000)] for _ in range(1000)]
     print("\n".join(str(x) for x in vecs_to_try))
     response_times = []
     for i in range(len(vecs_to_try)):
         print(f"Trying {vecs_to_try[i]}")
         vis = CatMouseVisualizer(suffix=str(i))
-        iters = simulate_cat_mouse(3, 50, 
-            Behavior(vecs_to_try[i][0]), vis.visualize_locations, vis.complete, seed = vecs_to_try[i][1])
+        iters = simulate_cat_mouse(
+            3,
+            50,
+            Behavior(
+                vecs_to_try[i][0]),
+            vis.visualize_locations,
+            vis.complete,
+            seed=vecs_to_try[i][1])
         print(f"Lived for {iters}")
         response_times.append(iters)
     print(response_times)

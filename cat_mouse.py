@@ -2,6 +2,7 @@ import random
 from creature import Creature, dist
 import math
 
+
 def argmin(args, func):
     min_v = float('inf')
     min_arg = None

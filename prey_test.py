@@ -5,14 +5,16 @@ from prey import Position
 
 def is_position_equal(pos, expected):
     try:
-        # Not clear if we got coordinates or a position object, so try to extract coordinates
+        # Not clear if we got coordinates or a position object, so try to
+        # extract coordinates
         return is_position_equal(pos.position, expected)
     except AttributeError:
         pass
     if not expected:
         return True
     try:
-        return all([is_position_equal(pos[i], expected[i]) for i in range(len(expected))])
+        return all([is_position_equal(pos[i], expected[i])
+                   for i in range(len(expected))])
     except TypeError:
         return pos == expected
     raise ("Mismatch")

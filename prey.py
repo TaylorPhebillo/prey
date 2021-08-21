@@ -13,7 +13,16 @@ def normalize(direction, length):
 class Position:
     # Cut velocity by 30% each step, leave other derivatives of position unchanged
     # TODO: elasticity = 1.0
-    def __init__(self, position=None, boundaries=1, acceleration_limit=0.01, nearness_threshold=0.1, drag=[1.0, 0.7, 1.0]):
+    def __init__(
+        self,
+        position=None,
+        boundaries=1,
+        acceleration_limit=0.01,
+        nearness_threshold=0.1,
+        drag=[
+            1.0,
+            0.7,
+            1.0]):
         self.drag = drag
         self.boundaries = boundaries
         self.acceleration_limit = acceleration_limit
@@ -24,8 +33,10 @@ class Position:
         if not position:
             # 2Dx3d- 2d for coordinates/direction, 3d means we use the third derivative
             # to target motion by default
-            self.position = [[random.random() if deriv_level == 0 else 0 for _ in range(
-                2)] for deriv_level in range(3)]
+            self.position = [
+                [random.random()
+                 if deriv_level == 0 else 0 for _ in range(2)]
+                for deriv_level in range(3)]
 
     def __repr__(self):
         return f"{self.position[0]}"
@@ -49,7 +60,7 @@ class Position:
         while self._single_bounce():
             pass
         assert(
-            all([self.position[0][x] >= 0 for x in range(len(self.position[0])-1)]))
+            all([self.position[0][x] >= 0 for x in range(len(self.position[0]) - 1)]))
 
     def _single_bounce(self):
         for i in range(len(self.position[0])):
@@ -67,11 +78,12 @@ class Position:
         else:
             self.position[0][dim] -= 2 * \
                 (self.position[0][dim] - self.boundaries)
-        for i in range(1, len(self.position)-1):
+        for i in range(1, len(self.position) - 1):
             self.position[i][dim] *= -1
 
     def is_near(self, other_positions):
-        return min([dist(self.position[0], p.position[0]) for p in other_positions]) < self.nearness_threshold
+        return min([dist(self.position[0], p.position[0])
+                   for p in other_positions]) < self.nearness_threshold
 
 
 def argmin(args, func):
@@ -94,16 +106,22 @@ def dist(a, b):
 class Behavior:
     required_dims = 4
 
-    def __init__(self, response=[0]*4):
+    def __init__(self, response=[0] * 4):
         self.response = response
         assert(len(response) == Behavior.required_dims)
 
     def react(self, cats, position):
-        return [-(position[1]-0.5), (position[0]-0.5)]
+        return [-(position[1] - 0.5), (position[0] - 0.5)]
 
 
 class CatMouseSimulator:
-    def __init__(self, cat_locations, mice_locations, cat_behavior, plotter, plotter_complete=None):
+    def __init__(
+            self,
+            cat_locations,
+            mice_locations,
+            cat_behavior,
+            plotter,
+            plotter_complete=None):
         self.cats = cat_locations
         self.mice = mice_locations
         self.cat_behavior = cat_behavior
@@ -119,10 +137,13 @@ class CatMouseSimulator:
     def iterate(self):
         closest_mice = [argmin(self.mice, lambda mouse: dist(
             mouse.position[0], cat.position[0])) for cat in self.cats]
-        direction_to_mice = [[closest_mice[i][0].position[0][d] - cat.position[0][d]
-                              for d in range(len(cat.position[0]))] for i, cat in enumerate(self.cats)]
-        mice_moves = [self.cat_behavior.react(
-            self.cats, self.mice[i].position[0]) for i in range(len(self.mice))]
+        direction_to_mice = [
+            [closest_mice[i][0].position[0][d] - cat.position[0][d]
+             for d in range(len(cat.position[0]))] for i,
+            cat in enumerate(self.cats)]
+        mice_moves = [
+            self.cat_behavior.react(self.cats, self.mice[i].position[0])
+            for i in range(len(self.mice))]
         # Move
         for i, cat in enumerate(self.cats):
             cat.accelerate_in_direction(direction_to_mice[i])
@@ -145,7 +166,12 @@ class CatMouseSimulator:
         return False
 
 
-def simulate_cat_mouse(num_cats, num_mice, cat_behavior, plotter=None, plotter_complete=None):
+def simulate_cat_mouse(
+        num_cats,
+        num_mice,
+        cat_behavior,
+        plotter=None,
+        plotter_complete=None):
 
     cats = [Position() for _ in range(num_cats)]
     mice = [Position() for _ in range(num_mice)]
@@ -171,11 +197,23 @@ class CatMouseVisualizer:
         self.imgs.append(
             Image.new('RGB', (self.img_size, self.img_size), "black"))
         draw = ImageDraw.Draw(self.imgs[-1])
-        dot_size = self.img_size*Position().nearness_threshold/2
+        dot_size = self.img_size * Position().nearness_threshold / 2
 
         def draw_at(pos, color):
-            draw.ellipse((pos[0]*self.img_size-dot_size, pos[1]*self.img_size-dot_size,
-                         pos[0]*self.img_size+dot_size, pos[1]*self.img_size+dot_size), fill=color)
+            draw.ellipse(
+                (pos[0] *
+                 self.img_size -
+                 dot_size,
+                 pos[1] *
+                    self.img_size -
+                    dot_size,
+                    pos[0] *
+                    self.img_size +
+                    dot_size,
+                    pos[1] *
+                    self.img_size +
+                    dot_size),
+                fill=color)
 
         for dead in killed:
             draw_at(dead.position[0], "blue")
@@ -186,14 +224,17 @@ class CatMouseVisualizer:
 
     def complete(self):
         print(f"Saving {len(self.imgs)} images into a gif")
-        Image.new('RGB', (self.img_size, self.img_size), "black").save(
-            fp=self.target, format='GIF', append_images=self.imgs, save_all=True, duration=20, loop=0)
+        Image.new(
+            'RGB', (self.img_size, self.img_size),
+            "black").save(
+            fp=self.target, format='GIF', append_images=self.imgs,
+            save_all=True, duration=20, loop=0)
 
 
 def main():
     vis = CatMouseVisualizer()
     iters = simulate_cat_mouse(3, 50, Behavior(
-        [0]*4), vis.visualize_locations, vis.complete)
+        [0] * 4), vis.visualize_locations, vis.complete)
     print(f"Lived for {iters}")
 
 

@@ -1,6 +1,7 @@
 import unittest
-import prey
-from prey import Creature
+from behavior import Behavior
+from creature import Creature
+from cat_mouse import CatMouseSimulator
 
 
 def is_position_equal(pos, expected):
@@ -23,11 +24,11 @@ def is_position_equal(pos, expected):
 class TestSimulation(unittest.TestCase):
     def test_behavior_length_except(self):
         with self.assertRaises(AssertionError):
-            p = prey.Behavior([])
+            p = Behavior([])
 
     def test_simulator_stops(self):
         # With no mice, simulation should stop immediately
-        s = prey.CatMouseSimulator([], [], prey.Behavior(), None)
+        s = CatMouseSimulator([], [], Behavior(), None)
         self.assertFalse(s.iterate())
 
     def build_position_checker(self):
@@ -39,10 +40,10 @@ class TestSimulation(unittest.TestCase):
         cat should accelerate one step to the mouse
         """
         def test_cat_from(init_position, plot_validator, should_mice_remain):
-            s = prey.CatMouseSimulator(
+            s = CatMouseSimulator(
                 [Creature([init_position, [0, 0]])],
                 [Creature([[0, 0], [0, 0]])],
-                prey.Behavior(),
+                Behavior(),
                 plot_validator)
             self.assertEqual(s.iterate(), should_mice_remain)
         test_cat_from([0, 0], None, False)

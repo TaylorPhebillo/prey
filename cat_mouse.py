@@ -1,12 +1,6 @@
 import random
-from creature import Creature
+from creature import Creature, dist
 import math
-
-
-def dist(point_a, point_b):
-    return math.sqrt(
-        sum([(point_a[i] - point_b[i])**2 for i in range(len(point_a))]))
-
 
 def argmin(args, func):
     min_v = float('inf')

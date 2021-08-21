@@ -1,6 +1,6 @@
 import random
-from PIL import Image, ImageDraw
 import math
+from PIL import Image, ImageDraw
 
 
 def normalize(direction, length):
@@ -12,7 +12,6 @@ def normalize(direction, length):
 
 class Position:
     # Cut velocity by 30% each step, leave other derivatives of position unchanged
-    # TODO: elasticity = 1.0
     def __init__(
         self,
         position=None,
@@ -28,13 +27,12 @@ class Position:
         self.acceleration_limit = acceleration_limit
         self.nearness_threshold = nearness_threshold
         # Position and velocity
-        # TODO: Setup within boundaries?
         self.position = position
         if not position:
             # 2Dx3d- 2d for coordinates/direction, 3d means we use the third derivative
             # to target motion by default
             self.position = [
-                [random.random()
+                [random.uniform(0, boundaries)
                  if deriv_level == 0 else 0 for _ in range(2)]
                 for deriv_level in range(3)]
 
@@ -58,7 +56,7 @@ class Position:
         while self._single_bounce():
             pass
         assert(
-            all([self.position[0][x] >= 0 for x in range(len(self.position[0]) - 1)]))
+            all(self.position[0][x] >= 0 for x in range(len(self.position[0]) - 1)))
 
     def _single_bounce(self):
         for i in range(len(self.position[0])):
@@ -170,12 +168,12 @@ class CatMouseSimulator:
         self.plotter_complete = plotter_complete
         self.killed = []
 
-    """
-    Move the cats and mice each one step. Update the plotter, if any
-    Return true if the simulation should continue (i.e. mice are alive)
-    """
 
     def iterate(self):
+        """
+        Move the cats and mice each one step. Update the plotter, if any
+        Return true if the simulation should continue (i.e. mice are alive)
+        """
         closest_mice = [argmin(self.mice, lambda mouse: dist(
             mouse.position[0], cat.position[0])) for cat in self.cats]
         closest_cats = [argmin(self.cats, lambda cat: dist(
@@ -191,8 +189,8 @@ class CatMouseSimulator:
         # Move
         for i, cat in enumerate(self.cats):
             cat.accelerate_in_direction(direction_to_mice[i])
-        for i, p in enumerate(self.mice):
-            p.accelerate_in_direction(mice_moves[i])
+        for i, mouse in enumerate(self.mice):
+            mouse.accelerate_in_direction(mice_moves[i])
         # Kill
         kill_indices = [self.mice[i].is_near(
             self.cats) for i in range(len(self.mice))]
@@ -221,7 +219,6 @@ def simulate_cat_mouse(
         random.seed(seed)
     cats = [Position() for _ in range(num_cats)]
     mice = [Position() for _ in range(num_mice)]
-    killed = []
     iterations = 0
     s = CatMouseSimulator(cats, mice, cat_behavior, plotter, plotter_complete)
     while s.iterate():
@@ -287,8 +284,9 @@ class CatMouseVisualizer:
 
 
 def fun_result():
+    """Simulate a saved behavior that seemed fun"""
     vis = CatMouseVisualizer(suffix="manual", limit=1000)
-    iters = simulate_cat_mouse(
+    simulate_cat_mouse(
         3, 50,
         Behavior(
             [1.2932335026451751, -0.6136395570170698, 0.2855665089845411, -
@@ -304,17 +302,17 @@ def main():
          random.randrange(100000000)] for _ in range(1000)]
     print("\n".join(str(x) for x in vecs_to_try))
     response_times = []
-    for i in range(len(vecs_to_try)):
+    for i, (response_vec, seed) in enumerate(vecs_to_try):
         print(f"Trying {vecs_to_try[i]}")
         vis = CatMouseVisualizer(suffix=str(i))
         iters = simulate_cat_mouse(
             3,
             50,
             Behavior(
-                vecs_to_try[i][0]),
+                response_vec),
             vis.visualize_locations,
             vis.complete,
-            seed=vecs_to_try[i][1])
+            seed=seed)
         print(f"Lived for {iters}")
         response_times.append(iters)
     print(response_times)

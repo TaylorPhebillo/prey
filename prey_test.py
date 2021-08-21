@@ -1,6 +1,6 @@
 import unittest
 import prey
-from prey import Position
+from prey import Creature
 
 
 def is_position_equal(pos, expected):
@@ -40,18 +40,18 @@ class TestSimulation(unittest.TestCase):
         """
         def test_cat_from(init_position, plot_validator, should_mice_remain):
             s = prey.CatMouseSimulator(
-                [Position([init_position, [0, 0]])],
-                [Position([[0, 0], [0, 0]])],
+                [Creature([init_position, [0, 0]])],
+                [Creature([[0, 0], [0, 0]])],
                 prey.Behavior(),
                 plot_validator)
             self.assertEqual(s.iterate(), should_mice_remain)
         test_cat_from([0, 0], None, False)
 
 
-class TestPosition(unittest.TestCase):
+class TestCreature(unittest.TestCase):
     def test_move(self):
         # Move with no momentum- each movement just updates velocity
-        p = Position([[0, 0], [0, 0]], 1, 0.1)
+        p = Creature([[0, 0], [0, 0]], 1, 0.1)
         p.accelerate_in_direction([1, 0])
         self.assertTrue(is_position_equal(p, [[0.1, 0], [0.1, 0]]))
         p.accelerate_in_direction([1, 0])
@@ -60,12 +60,12 @@ class TestPosition(unittest.TestCase):
         self.assertTrue(is_position_equal(p, [[0.2, 0.1], [0, 0.1]]))
 
     def test_bounce_velocity(self):
-        p = Position([[0, 0], [0, 0]], 1, 0.1)
+        p = Creature([[0, 0], [0, 0]], 1, 0.1)
         p.accelerate_in_direction([-1, 0])
         self.assertTrue(is_position_equal(p, [[0.1, 0], [-0.1, 0]]))
 
     def test_bounce_accel(self):
-        p = Position([[0, 0], [0, 0], [0, 0]], 1, 0.1, 0, [1.0, 1.0, 1.0])
+        p = Creature([[0, 0], [0, 0], [0, 0]], 1, 0.1, 0, [1.0, 1.0, 1.0])
         p.accelerate_in_direction([-1, 0])
         self.assertTrue(is_position_equal(p, [[0.1, 0], [0.1, 0], [-0.1, 0]]))
 

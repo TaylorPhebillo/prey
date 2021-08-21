@@ -6,3 +6,6 @@ Cats will always chase the nearest mouse. Mice behaviors are configurable at the
 This simulation is a fun opportunity for optimization. The mice behaviors are configured by a floating point vector, which can be optimized by any gradiant-free method. The behavior vectors are small and simple enough that optimization should be easy without being trivial, and the simulation is complex enough for interesting emergent behaviors. For example, see the mice (red) completely ignore the cats (white), in order to run the cats in circles and survive for a long time.
 
 ![Circles](circle.gif)
+
+## Use
+

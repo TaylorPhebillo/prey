@@ -10,7 +10,7 @@ class CatMouseVisualizer:
     def __init__(
             self,
             size=256,
-            target="/Users/taylor/prey/test",
+            target="simulated_result",
             suffix="",
             filetype=".gif",
             limit=None):

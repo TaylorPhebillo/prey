@@ -1,5 +1,4 @@
 # Cats chasing Mice
-# Cats chasing Mice
 This project simulates dumb cats chasing configurable mice around a 2d box.
 
 Cats will always chase the nearest mouse. Mice behaviors are configurable at the start of the simulation, and can respond to their individual position and the position of the nearest cat. The simulation returns the lifetime of the longest lived mouse, and can optionally log or plot the simulated results.

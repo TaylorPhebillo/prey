@@ -8,4 +8,8 @@ This simulation is a fun opportunity for optimization. The mice behaviors are co
 ![Circles](circle.gif)
 
 ## Use
+Run `python3 multi_sim.py` to simulate 1000 random behaviors with random inputs, saving the visualiations in the current directory. 
 
+`python3 special_results.py` will simulate and visualize a couple of hard-coded behaviors that should be a little more interesting than pure random.
+
+Physical simulation parameters, and the number of cats and mice, are not currently configurable.

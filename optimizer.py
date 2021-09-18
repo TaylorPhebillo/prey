@@ -61,7 +61,7 @@ def main():
     climber = HillClimber(lambda: [gauss() for _ in range(10)],
                           lambda x: [x[i] + (gauss() / 30) for i in range(10)],
                           cat_mouse_opt_adaptor_no_vis)
-    result = climber.optimize_with_restarts(2, 2)
+    result = climber.optimize_with_restarts(30, 20)
     cat_mouse_opt_adaptor(result[0])
     print(result)
 
